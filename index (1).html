@@ -1,0 +1,270 @@
+:root {
+  --bg: #e0e5ec;
+  --text-dark: #374151;
+  --text-light: #6b7280;
+  --primary: #3b82f6;
+  --success: #10b981;
+  --danger: #ef4444;
+  --shadow-light: -8px -8px 16px #ffffff;
+  --shadow-dark: 8px 8px 16px #b8b9be;
+  --inner-light: inset -4px -4px 8px #ffffff;
+  --inner-dark: inset 4px 4px 8px #b8b9be;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text-dark);
+  display: flex;
+  justify-content: center;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  padding: 25px;
+  box-sizing: border-box;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden { display: none !important; }
+
+/* 1. Home Elements */
+.home-header {
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 50px;
+}
+
+.brand-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  color: #1f2937;
+}
+
+.brand-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-top: 5px;
+}
+
+.menu-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Neumorphism Base Styles */
+.neumorphic-btn {
+  background: var(--bg);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 20px;
+  padding: 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  cursor: pointer;
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+  transition: all 0.2s ease;
+}
+
+.neumorphic-btn:active {
+  box-shadow: var(--inner-dark), var(--inner-light);
+  transform: scale(0.98);
+}
+
+.icon { font-size: 1.5rem; }
+
+.card {
+  background: var(--bg);
+  border-radius: 25px;
+  padding: 20px;
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+  margin-bottom: 25px;
+}
+
+/* Form Inputs */
+.neu-input {
+  width: 100%;
+  border: none;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: 12px;
+  box-shadow: var(--inner-dark), var(--inner-light);
+  color: var(--text-dark);
+  box-sizing: border-box;
+  margin-top: 5px;
+}
+
+.input-group { margin-bottom: 15px; }
+.input-group label { font-size: 0.85rem; font-weight: bold; color: var(--text-light); }
+
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+.alarm-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alarm-toggle input {
+  width: 20px; height: 20px; cursor: pointer;
+}
+
+.save-btn { width: 100%; background: var(--bg); color: var(--success); }
+.clear-btn { width: 100%; color: var(--danger); margin-top: 30px; }
+
+/* 2. Scanning Frame and Loader */
+.file-upload-trigger {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  cursor: pointer;
+}
+
+.upload-icon { font-size: 3rem; margin-bottom: 10px; }
+
+.loader { text-align: center; padding: 20px; }
+.spinner {
+  width: 35px; height: 35px; border: 4px solid #fff; border-top: 4px solid var(--primary);
+  border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 3. Calendar styles */
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.icon-btn {
+  background: var(--bg);
+  border: none;
+  border-radius: 12px;
+  width: 40px; height: 40px;
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+  font-size: 1.2rem; cursor: pointer;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.weekday-head {
+  font-size: 0.75rem;
+  font-weight: bold;
+  opacity: 0.6;
+}
+
+.cal-day {
+  background: var(--bg);
+  border: none;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cal-day.active-day {
+  box-shadow: var(--inner-dark), var(--inner-light);
+  color: var(--primary);
+  font-weight: bold;
+}
+
+.cal-day.has-med::after {
+  content: '•';
+  position: absolute;
+  bottom: 2px;
+  color: var(--primary);
+  font-size: 1.2rem;
+}
+
+/* 4. Timetable Timeline */
+.timeline-wrapper {
+  position: relative;
+  padding-left: 25px;
+  margin-top: 15px;
+}
+
+.timeline-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #cbd5e1;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid var(--bg);
+  z-index: 1;
+}
+
+.timeline-item.meal::before { background: #f59e0b; }
+.timeline-item.empty::before { background: #9ca3af; }
+
+.timeline-time {
+  font-weight: 800;
+  color: var(--primary);
+  font-size: 0.9rem;
+  min-width: 55px;
+}
+
+.timeline-content {
+  flex: 1;
+  background: var(--bg);
+  padding: 12px;
+  border-radius: 15px;
+  box-shadow: var(--shadow-dark), var(--shadow-light);
+}
+
+.timeline-item.empty .timeline-content {
+  box-shadow: none;
+  opacity: 0.5;
+}
