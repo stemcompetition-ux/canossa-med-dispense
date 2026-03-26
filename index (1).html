@@ -1,270 +1,347 @@
-:root {
-  --bg: #e0e5ec;
-  --text-dark: #374151;
-  --text-light: #6b7280;
-  --primary: #3b82f6;
-  --success: #10b981;
-  --danger: #ef4444;
-  --shadow-light: -8px -8px 16px #ffffff;
-  --shadow-dark: 8px 8px 16px #b8b9be;
-  --inner-light: inset -4px -4px 8px #ffffff;
-  --inner-dark: inset 4px 4px 8px #b8b9be;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canossa Med Dispenser</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --text-dark: #374151;
+            --text-light: #6b7280;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow-light: -8px -8px 16px #ffffff;
+            --shadow-dark: 8px 8px 16px #b8b9be;
+            --inner-light: inset -4px -4px 8px #ffffff;
+            --inner-dark: inset 4px 4px 8px #b8b9be;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
+        .screen { display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+
+        /* Neumorphism Styles */
+        .home-header { text-align: center; margin-top: 40px; margin-bottom: 50px; }
+        .brand-title { font-size: 1.8rem; font-weight: 800; margin: 0; color: #1f2937; }
+        .brand-subtitle { font-size: 0.9rem; color: var(--text-light); margin-top: 5px; }
+
+        .neumorphic-btn {
+            background: var(--bg);
+            color: var(--text-dark);
+            border: none;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            cursor: pointer;
+            box-shadow: var(--shadow-dark), var(--shadow-light);
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .neumorphic-btn:active {
+            box-shadow: var(--inner-dark), var(--inner-light);
+            transform: scale(0.98);
+        }
+
+        .card {
+            background: var(--bg);
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: var(--shadow-dark), var(--shadow-light);
+            margin-bottom: 25px;
+        }
+
+        .neu-input {
+            width: 100%; border: none; padding: 12px;
+            background: var(--bg); border-radius: 12px;
+            box-shadow: var(--inner-dark), var(--inner-light);
+            color: var(--text-dark); box-sizing: border-box; margin-top: 5px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-size: 0.85rem; font-weight: bold; color: var(--text-light); }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .save-btn { width: 100%; background: var(--bg); color: var(--success); }
+        .clear-btn { width: 100%; color: var(--danger); margin-top: 30px; }
+
+        /* Loader & OCR Styles */
+        .file-upload-trigger { display: flex; flex-direction: column; align-items: center; padding: 40px; cursor: pointer; }
+        .upload-icon { font-size: 3rem; margin-bottom: 10px; }
+        .loader { text-align: center; padding: 20px; }
+        .spinner {
+            width: 35px; height: 35px; border: 4px solid #fff; border-top: 4px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Calendar */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; text-align: center; }
+        .cal-day {
+            background: var(--bg); border: none; aspect-ratio: 1; border-radius: 10px;
+            box-shadow: var(--shadow-dark), var(--shadow-light); font-size: 0.85rem; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+        .cal-day.active-day { box-shadow: var(--inner-dark), var(--inner-light); color: var(--primary); font-weight: bold; }
+        .cal-day.has-med::after { content: '•'; position: absolute; bottom: 2px; color: var(--primary); font-size: 1.2rem; }
+
+        /* Timeline */
+        .timeline-wrapper { position: relative; padding-left: 25px; margin-top: 15px; border-left: 2px solid #cbd5e1; }
+        .timeline-item { margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .timeline-time { font-weight: 800; color: var(--primary); min-width: 55px; }
+        .timeline-content { flex: 1; background: var(--bg); padding: 12px; border-radius: 15px; box-shadow: var(--shadow-dark), var(--shadow-light); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <section id="home-screen" class="screen">
+        <header class="home-header">
+            <h1 class="brand-title">Canossa Med Dispenser</h1>
+            <p class="brand-subtitle">Smart Healthcare Companion</p>
+        </header>
+
+        <div class="menu-grid">
+            <button class="neumorphic-btn" onclick="showScreen('scan-screen')">
+                <span class="icon">📷</span> <span data-i18n="btn_scan">Scan Medicine</span>
+            </button>
+            <button class="neumorphic-btn" onclick="showScreen('schedule-screen')">
+                <span class="icon">📅</span> <span data-i18n="btn_schedule">Schedule</span>
+            </button>
+            <button class="neumorphic-btn" onclick="showScreen('settings-screen')">
+                <span class="icon">⚙️</span> <span data-i18n="btn_settings">Settings</span>
+            </button>
+        </div>
+    </section>
+
+    <section id="scan-screen" class="screen hidden">
+        <header style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <button class="neumorphic-btn" style="padding:10px; width:40px;" onclick="showScreen('home-screen')">←</button>
+            <h2 data-i18n="scan_title">AI Smart Scan</h2>
+        </header>
+
+        <div class="card">
+            <label for="image-input" class="file-upload-trigger">
+                <span class="upload-icon">📸</span>
+                <span data-i18n="tap_photo">Capture Medicine Label</span>
+            </label>
+            <input type="file" id="image-input" accept="image/*" capture="environment" class="hidden">
+        </div>
+
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p id="progress-text">OCR analyzing label...</p>
+        </div>
+
+        <div id="result-area" class="card hidden">
+            <h3 data-i18n="verify_title">Verify Information</h3>
+            <div class="input-group">
+                <label data-i18n="label_patient">Patient</label>
+                <input type="text" id="edit-patient" class="neu-input">
+            </div>
+            <div class="input-group">
+                <label data-i18n="label_med">Medicine</label>
+                <input type="text" id="edit-med" class="neu-input">
+            </div>
+            <div class="row">
+                <div class="input-group">
+                    <label data-i18n="label_qty">Pills</label>
+                    <input type="number" id="edit-qty" class="neu-input">
+                </div>
+                <div class="input-group">
+                    <label data-i18n="label_freq">Times/Day</label>
+                    <input type="number" id="edit-freq" class="neu-input">
+                </div>
+            </div>
+            <div class="input-group">
+                <label data-i18n="label_meal">Timing</label>
+                <select id="edit-relation" class="neu-input">
+                    <option value="none" data-i18n="opt_with">With Meal</option>
+                    <option value="before" data-i18n="opt_before">Before Meal (30m)</option>
+                    <option value="after" data-i18n="opt_after">After Meal (30m)</option>
+                </select>
+            </div>
+            <button class="neumorphic-btn save-btn" onclick="saveToSchedule()" data-i18n="btn_save">Add to Schedule</button>
+        </div>
+    </section>
+
+    <section id="schedule-screen" class="screen hidden">
+        <header style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <button class="neumorphic-btn" style="padding:10px; width:40px;" onclick="showScreen('home-screen')">←</button>
+            <h2 data-i18n="schedule_title">Schedule</h2>
+        </header>
+        <div class="card">
+            <div id="calendar-grid" class="calendar-grid"></div>
+        </div>
+        <div id="day-timetable-container" class="card hidden">
+            <h3 id="selected-date-title">Timetable</h3>
+            <div class="timeline-wrapper" id="timeline-list"></div>
+        </div>
+        <button class="neumorphic-btn clear-btn" onclick="clearSchedule()" data-i18n="btn_clear">Clear All Data</button>
+    </section>
+
+    <section id="settings-screen" class="screen hidden">
+        <button class="neumorphic-btn" style="padding:10px; width:40px;" onclick="showScreen('home-screen')">←</button>
+        <div class="card">
+            <h3 data-i18n="meal_settings">Your Meal Times</h3>
+            <input type="time" id="user-bfast" class="neu-input" value="08:00">
+            <input type="time" id="user-lunch" class="neu-input" value="13:00">
+            <input type="time" id="user-dinner" class="neu-input" value="19:00">
+        </div>
+    </section>
+
+</div>
+
+<script>
+// --- STATE ---
+let database = JSON.parse(localStorage.getItem('canossaMeds')) || [];
+let currentLang = localStorage.getItem('canossaLang') || 'en';
+
+const i18n = {
+    en: {
+        btn_scan: "Scan Medicine", btn_schedule: "Schedule", btn_settings: "Settings",
+        scan_title: "Easy OCR Scan", tap_photo: "Capture Medicine Label", loading: "Reading label...",
+        verify_title: "Verify Info", label_patient: "Patient", label_med: "Medicine",
+        label_qty: "Pills", label_freq: "Times/Day", label_meal: "Timing",
+        opt_with: "With Meal", opt_before: "Before (30m)", opt_after: "After (30m)",
+        btn_save: "Add to Schedule", schedule_title: "Health Calendar", btn_clear: "Clear Data",
+        meal_settings: "Standard Meal Times", weekdays: ["S", "M", "T", "W", "T", "F", "S"]
+    }
+};
+
+// --- NAVIGATION ---
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+    if (id === 'schedule-screen') renderCalendar();
 }
 
-body {
-  margin: 0;
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  background-color: var(--bg);
-  color: var(--text-dark);
-  display: flex;
-  justify-content: center;
+// --- EASY OCR & ANALYSING FUNCTION ---
+document.getElementById('image-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    document.getElementById('loader').classList.remove('hidden');
+    document.getElementById('result-area').classList.add('hidden');
+
+    try {
+        const result = await Tesseract.recognize(file, 'eng', {
+            logger: m => {
+                if(m.status === 'recognizing text') {
+                    document.getElementById('progress-text').innerText = `Analyzing: ${Math.round(m.progress * 100)}%`;
+                }
+            }
+        });
+
+        const text = result.data.text;
+        console.log("Raw Scanned Text:", text);
+
+        // --- THE ANALYSING LOGIC (Regex) ---
+        const patientMatch = text.match(/(?:Name|Patient|Mr|Ms)\.?\s*:?\s*([A-Z][a-z]+(?:\s[A-Z][a-z]+)*)/);
+        const medMatch = text.match(/([A-Z][a-z0-9\-]+(?:\s[A-Z][a-z0-9\-]+)*)\s*(?:\d+mg|\d+ml|Tablet|Capsule)/i);
+        const qtyMatch = text.match(/(?:take|qty|dose)\s*(\d+)/i) || text.match(/(\d+)\s*(?:tablet|pill|cap)/i);
+        const freqMatch = text.match(/(\d+)\s*(?:times|x)\s*(?:a day|daily)/i);
+
+        document.getElementById('edit-patient').value = patientMatch ? patientMatch[1] : "Guest";
+        document.getElementById('edit-med').value = medMatch ? medMatch[1] : "New Medicine";
+        document.getElementById('edit-qty').value = qtyMatch ? qtyMatch[1] : 1;
+        document.getElementById('edit-freq').value = freqMatch ? freqMatch[1] : 1;
+        document.getElementById('edit-relation').value = /before/i.test(text) ? "before" : (/after/i.test(text) ? "after" : "none");
+
+        document.getElementById('result-area').classList.remove('hidden');
+    } catch (err) {
+        alert("OCR Error: Make sure text is clear.");
+    } finally {
+        document.getElementById('loader').classList.add('hidden');
+    }
+});
+
+// --- CORE APP LOGIC ---
+function saveToSchedule() {
+    const med = document.getElementById('edit-med').value;
+    const freq = parseInt(document.getElementById('edit-freq').value) || 1;
+    const rel = document.getElementById('edit-relation').value;
+
+    // Time math based on settings
+    const bfast = document.getElementById('user-bfast').value;
+    const lunch = document.getElementById('user-lunch').value;
+    const dinner = document.getElementById('user-dinner').value;
+
+    let tArray = freq === 1 ? [lunch] : (freq === 2 ? [bfast, dinner] : [bfast, lunch, dinner]);
+
+    database.push({
+        id: Date.now(),
+        med,
+        patient: document.getElementById('edit-patient').value,
+        qty: document.getElementById('edit-qty').value,
+        times: tArray
+    });
+
+    localStorage.setItem('canossaMeds', JSON.stringify(database));
+    showScreen('schedule-screen');
 }
 
-.app-container {
-  width: 100%;
-  max-width: 480px;
-  min-height: 100vh;
-  padding: 25px;
-  box-sizing: border-box;
+function renderCalendar() {
+    const grid = document.getElementById('calendar-grid');
+    grid.innerHTML = '';
+    const daysQty = new Date(2026, 3, 0).getDate(); // March 2026
+    for (let d = 1; d <= daysQty; d++) {
+        const hasMed = database.length > 0 ? 'has-med' : '';
+        grid.innerHTML += `<button class="cal-day ${hasMed}" onclick="showTimeline(${d})">${d}</button>`;
+    }
 }
 
-.screen {
-  display: flex;
-  flex-direction: column;
+function showTimeline(day) {
+    const container = document.getElementById('day-timetable-container');
+    const list = document.getElementById('timeline-list');
+    container.classList.remove('hidden');
+    list.innerHTML = '';
+    
+    database.forEach(item => {
+        item.times.forEach(t => {
+            list.innerHTML += `
+                <div class="timeline-item">
+                    <div class="timeline-time">${t}</div>
+                    <div class="timeline-content"><strong>${item.med}</strong> - ${item.qty} Pill(s)</div>
+                </div>`;
+        });
+    });
 }
 
-.hidden { display: none !important; }
-
-/* 1. Home Elements */
-.home-header {
-  text-align: center;
-  margin-top: 40px;
-  margin-bottom: 50px;
+function clearSchedule() {
+    if(confirm("Delete all?")) {
+        database = [];
+        localStorage.removeItem('canossaMeds');
+        location.reload();
+    }
 }
-
-.brand-title {
-  font-size: 1.8rem;
-  font-weight: 800;
-  margin: 0;
-  color: #1f2937;
-}
-
-.brand-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-top: 5px;
-}
-
-.menu-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-/* Neumorphism Base Styles */
-.neumorphic-btn {
-  background: var(--bg);
-  color: var(--text-dark);
-  border: none;
-  border-radius: 20px;
-  padding: 20px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  cursor: pointer;
-  box-shadow: var(--shadow-dark), var(--shadow-light);
-  transition: all 0.2s ease;
-}
-
-.neumorphic-btn:active {
-  box-shadow: var(--inner-dark), var(--inner-light);
-  transform: scale(0.98);
-}
-
-.icon { font-size: 1.5rem; }
-
-.card {
-  background: var(--bg);
-  border-radius: 25px;
-  padding: 20px;
-  box-shadow: var(--shadow-dark), var(--shadow-light);
-  margin-bottom: 25px;
-}
-
-/* Form Inputs */
-.neu-input {
-  width: 100%;
-  border: none;
-  padding: 12px;
-  background: var(--bg);
-  border-radius: 12px;
-  box-shadow: var(--inner-dark), var(--inner-light);
-  color: var(--text-dark);
-  box-sizing: border-box;
-  margin-top: 5px;
-}
-
-.input-group { margin-bottom: 15px; }
-.input-group label { font-size: 0.85rem; font-weight: bold; color: var(--text-light); }
-
-.row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-.alarm-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.alarm-toggle input {
-  width: 20px; height: 20px; cursor: pointer;
-}
-
-.save-btn { width: 100%; background: var(--bg); color: var(--success); }
-.clear-btn { width: 100%; color: var(--danger); margin-top: 30px; }
-
-/* 2. Scanning Frame and Loader */
-.file-upload-trigger {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px;
-  cursor: pointer;
-}
-
-.upload-icon { font-size: 3rem; margin-bottom: 10px; }
-
-.loader { text-align: center; padding: 20px; }
-.spinner {
-  width: 35px; height: 35px; border: 4px solid #fff; border-top: 4px solid var(--primary);
-  border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px;
-}
-
-@keyframes spin { 100% { transform: rotate(360deg); } }
-
-/* 3. Calendar styles */
-.screen-header {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.icon-btn {
-  background: var(--bg);
-  border: none;
-  border-radius: 12px;
-  width: 40px; height: 40px;
-  box-shadow: var(--shadow-dark), var(--shadow-light);
-  font-size: 1.2rem; cursor: pointer;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  text-align: center;
-}
-
-.weekday-head {
-  font-size: 0.75rem;
-  font-weight: bold;
-  opacity: 0.6;
-}
-
-.cal-day {
-  background: var(--bg);
-  border: none;
-  aspect-ratio: 1;
-  border-radius: 10px;
-  box-shadow: var(--shadow-dark), var(--shadow-light);
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-.cal-day.active-day {
-  box-shadow: var(--inner-dark), var(--inner-light);
-  color: var(--primary);
-  font-weight: bold;
-}
-
-.cal-day.has-med::after {
-  content: '•';
-  position: absolute;
-  bottom: 2px;
-  color: var(--primary);
-  font-size: 1.2rem;
-}
-
-/* 4. Timetable Timeline */
-.timeline-wrapper {
-  position: relative;
-  padding-left: 25px;
-  margin-top: 15px;
-}
-
-.timeline-wrapper::before {
-  content: '';
-  position: absolute;
-  left: 9px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: #cbd5e1;
-}
-
-.timeline-item {
-  position: relative;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.timeline-item::before {
-  content: '';
-  position: absolute;
-  left: -20px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--primary);
-  border: 2px solid var(--bg);
-  z-index: 1;
-}
-
-.timeline-item.meal::before { background: #f59e0b; }
-.timeline-item.empty::before { background: #9ca3af; }
-
-.timeline-time {
-  font-weight: 800;
-  color: var(--primary);
-  font-size: 0.9rem;
-  min-width: 55px;
-}
-
-.timeline-content {
-  flex: 1;
-  background: var(--bg);
-  padding: 12px;
-  border-radius: 15px;
-  box-shadow: var(--shadow-dark), var(--shadow-light);
-}
-
-.timeline-item.empty .timeline-content {
-  box-shadow: none;
-  opacity: 0.5;
-}
+</script>
+</body>
+</html>
